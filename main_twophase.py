@@ -55,14 +55,14 @@ for i in range(nstep):
     solverS.step(dt)
 
     after = time()
-    print '[{}/{}]: this loop took {} secs'.format(i+1, nstep, after - before)
+    print('[{}/{}]: this loop took {} secs'.format(i+1, nstep, after - before))
 
     s_list.append(solverS.s)
 
 # visualize
-fig, axs = plt.subplots(5,5, figsize=(8,8))
-fig.subplots_adjust(wspace=.1, hspace=.1, left=0, right=1, bottom=0, top=1)
-for ax, s in zip(axs.ravel(), s_list):
-    ax.imshow(s)
-    ax.axis('off')
-fig.savefig('saturations.png', bbox_inches=0, pad_inches=0)
+# fig, axs = plt.subplots(5,5, figsize=(8,8))
+# fig.subplots_adjust(wspace=.1, hspace=.1, left=0, right=1, bottom=0, top=1)
+# for ax, s in zip(axs.ravel(), s_list):
+#     ax.imshow(s)
+#     ax.axis('off')
+# fig.savefig('saturations.png', bbox_inches=0, pad_inches=0)
