@@ -24,7 +24,7 @@ s_wir, s_oir = 0.2, 0.2  # irreducible saturations
 
 phi = np.ones(grid.shape)*0.2  # uniform porosity
 s0 = np.ones(grid.shape) * s_wir  # initial water saturation equals s_wir
-dt = 1e-3  # timestep
+dt = 1e-4  # timestep
 
 mobi_fn = functools.partial(utils.quadratic_mobility, mu_w=mu_w, mu_o=mu_o, s_wir=s_wir, s_oir=s_oir)  # quadratic mobility model
 lamb_fn = functools.partial(utils.lamb_fn, mobi_fn=mobi_fn)  # total mobility function
@@ -49,20 +49,22 @@ for i in range(nstep):
     # solve pressure
     solverP.s = solverS.s
     solverP.step()
+    print('p')
 
     # solve saturation
     solverS.v = solverP.v
-    solverS.step(dt)
-
+    solverS.step_dyn_dt(dt)
+    print('s')
     after = time()
     print('[{}/{}]: this loop took {} secs'.format(i+1, nstep, after - before))
 
     s_list.append(solverS.s)
 
 # visualize
-# fig, axs = plt.subplots(5,5, figsize=(8,8))
-# fig.subplots_adjust(wspace=.1, hspace=.1, left=0, right=1, bottom=0, top=1)
-# for ax, s in zip(axs.ravel(), s_list):
-#     ax.imshow(s)
-#     ax.axis('off')
+fig, axs = plt.subplots(5,5, figsize=(8,8))
+fig.subplots_adjust(wspace=.1, hspace=.1, left=0, right=1, bottom=0, top=1)
+for ax, s in zip(axs.ravel(), s_list):
+    ax.imshow(s)
+    ax.axis('off')
+plt.show()
 # fig.savefig('saturations.png', bbox_inches=0, pad_inches=0)

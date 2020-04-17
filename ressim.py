@@ -356,6 +356,67 @@ class SaturationEquation(Parameters):
         s = self.solve(residual, s0=s, residual_jac=residual_jac)
         self.s = np.clip(s, 0., 1.).reshape(*grid.shape)  # clip to ensure within [0, 1]
 
+    
+    def step_dyn_dt(self, dt):
+        grid, q, phi, s = self.grid, self.q, self.phi, self.s
+        v = self.v
+        f_fn = self.f_fn
+
+        mat = convecti(grid, v)
+        s = s.reshape(grid.ncell)
+        q = q.reshape(grid.ncell)
+
+        def alpha(dt):
+            alpha = float(dt) / (grid.vol * phi)
+            return alpha.reshape(grid.ncell)
+
+        def residual(s0, s, alpha):
+            f = f_fn(s)
+            qp = np.maximum(q,0)
+            qn = np.minimum(q,0)
+            r = s - s0 + alpha * (mat.dot(f) - (qp + f*qn))
+            return r
+
+        def residual_jac(s, alpha):
+            df = self.df_fn(s)
+            qn = np.minimum(q,0)
+            eye = spa.eye(len(s))
+            df_eye = spa.diags(df, 0, shape=(len(s), len(s)))
+            alpha_eye = spa.diags(alpha, 0, shape=(len(s), len(s)))
+            qn_eye = spa.diags(qn, 0, shape=(len(s), len(s)))
+            dr = eye + (alpha_eye.dot(mat - qn_eye)).dot(df_eye)
+            return dr
+        
+        T = dt
+        s00 = s
+        IT=0
+        conv=0
+        max_iter = 10
+        tol = 1e-3
+        while conv==0:
+            dt_ = T/2**IT
+            for _ in range(2**IT):
+                s0 = s
+                for _ in range(max_iter):
+                    alpha_ = alpha(dt_)
+                    r = residual(s0, s, alpha_)
+                    dr = residual_jac(s, alpha_)
+                    ds = scipy.sparse.linalg.spsolve(dr, r)
+                    s = s+ds
+                    dsn = np.linalg.norm(ds)
+                    if dsn<tol:
+                        break
+                if dsn > tol:
+                    s = s00
+                    break
+            if dsn < tol:
+                conv=1
+            else:
+                IT += 1
+        self.s = np.clip(s, 0., 1.).reshape(*grid.shape)  # clip to ensure within [0, 1]
+
+
+
     # def solve(self, residual, s0, residual_jac=None):
     #     if residual_jac is None:
     #         residual_jac = '2-point'
