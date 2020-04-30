@@ -248,7 +248,7 @@ class PressureEquation(Parameters):
 
         mat, tx, ty = transmi(grid, k)
         q = np.copy(q).reshape(grid.ncell)
-        impose_diri(mat, q, diri)  # inplace op on mat, q
+        # impose_diri(mat, q, diri)  # inplace op on mat, q
 
         # pressure
         p = self.solve(mat, q)
@@ -450,7 +450,11 @@ def transmi(grid, k):
     x1 = tx[:,0:nx].reshape(n); x2 = tx[:,1:nx+1].reshape(n)
     y1 = ty[0:ny,:].reshape(n); y2 = ty[1:ny+1,:].reshape(n)
 
-    data = [-y2, -x2, x1+x2+y1+y2, -x1, -y1]
+    # pos def trick
+    a = x1+x2+y1+y2
+    # a[0] = a[0] + 2*k[0,0]
+
+    data = [-y2, -x2, a, -x1, -y1]
     diags = [-nx, -1, 0, 1, nx]
     mat = spa.spdiags(data, diags, n, n, format='csr')
 
@@ -485,8 +489,8 @@ def impose_diri(mat, q, diri):
     """
     for i, val in diri:
         csr_row_set_nz_to_val(mat, i, 0.0)
-        mat[i,i] = 1.0
-        q[i] = val
+        mat[i,i] = 1.0 #1e12
+        q[i] = val #val*1e12
     mat.eliminate_zeros()
 
 def csr_row_set_nz_to_val(csr, row, value=0):
