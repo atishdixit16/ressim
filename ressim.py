@@ -401,7 +401,7 @@ class SaturationEquation(Parameters):
                     alpha_ = alpha(dt_)
                     r = residual(s0, s, alpha_)
                     dr = residual_jac(s, alpha_)
-                    ds = scipy.sparse.linalg.spsolve(dr, r)
+                    ds = -scipy.sparse.linalg.spsolve(dr, r)
                     s = s+ds
                     dsn = np.linalg.norm(ds)
                     if dsn<tol:
