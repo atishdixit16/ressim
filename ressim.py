@@ -413,6 +413,43 @@ class SaturationEquation(Parameters):
                 IT += 1
         self.s = np.clip(s, 0., 1.).reshape(*grid.shape)  # clip to ensure within [0, 1]
 
+    def step_explicit(self, dt, s_wir, s_oir):
+        grid, q, phi, s = self.grid, self.q, self.phi, self.s
+        v = self.v
+        f_fn = self.f_fn
+        s = s.reshape(grid.ncell)
+        q = q.reshape(grid.ncell)
+        phi = phi.reshape(grid.ncell)
+        
+        nx, ny = grid.nx, grid.ny
+        pv = grid.vol*phi
+
+        qp = np.maximum(q,0)
+        qn = np.minimum(q,0)
+        xn = np.minimum(v['x'], 0)
+        yn = np.minimum(v['y'], 0)
+        xp = np.maximum(v['x'], 0)
+        yp = np.maximum(v['y'], 0)
+
+        vi = xp[0:nx-1,:] + yp[:,0:ny-1] + xn[1:nx,:] + yn[:,1:ny]
+        vi = vi.reshape(grid.ncell)
+        pm = np.min( pv/vi + qp)
+        cfl = ((1-s_oir-s_wir)/3)*pm
+        Nts = np.ceil(dt/cfl)
+        dtx = (dt/Nts)/pv
+
+        mat = convecti(grid, v)
+        mat = mat + spa.spdiags(qn,0,grid.ncell, grid.ncell)
+        mat = spa.spdiags(dtx,0,grid.ncell,grid.ncell)*mat
+        fi = qp*dtx
+
+        for _ in range(Nts):
+            f = f_fn(s)
+            s = s + mat*f + fi
+
+        self.s = np.clip(s, 0., 1.).reshape(*grid.shape)  # clip to ensure within [0, 1]
+
+
     def solve(self, residual, s0, residual_jac=None):
         if residual_jac is None:
             residual_jac = 'krylov'
