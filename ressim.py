@@ -450,11 +450,7 @@ def transmi(grid, k):
     x1 = tx[:,0:nx].reshape(n); x2 = tx[:,1:nx+1].reshape(n)
     y1 = ty[0:ny,:].reshape(n); y2 = ty[1:ny+1,:].reshape(n)
 
-    # pos def trick
-    a = x1+x2+y1+y2
-    # a[0] = a[0] + 2*k[0,0]
-
-    data = [-y2, -x2, a, -x1, -y1]
+    data = [-y2, -x2,x1+x2+y1+y2 , -x1, -y1]
     diags = [-nx, -1, 0, 1, nx]
     mat = spa.spdiags(data, diags, n, n, format='csr')
 
