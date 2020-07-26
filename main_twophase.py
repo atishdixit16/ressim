@@ -54,7 +54,9 @@ for i in range(nstep):
     
     # solve saturation
     solverS.v = solverP.v
-    solverS.step_explicit(dt, s_wir, s_oir)
+    # solverS.step_explicit(dt, s_wir, s_oir)
+    solverS.step(dt)
+    # solverS.step_mrst(dt)
     print('s')
     after = time()
     print('[{}/{}]: this loop took {} secs'.format(i+1, nstep, after - before))
@@ -63,8 +65,10 @@ for i in range(nstep):
 
 # visualize
 fig, axs = plt.subplots(5,5, figsize=(8,8))
-fig.subplots_adjust(wspace=.1, hspace=.1, left=0, right=1, bottom=0, top=1)
+fig.subplots_adjust(wspace=.1, hspace=.1, left=0.15, right=0.85, bottom=0.1, top=0.9)
 for ax, s in zip(axs.ravel(), s_list):
-    ax.imshow(s)
+    im = ax.imshow(s, vmin=0, vmax=1)
     ax.axis('off')
+cbar_ax = fig.add_axes([0.9, 0.15, 0.05, 0.7])
+fig.colorbar(im, cax=cbar_ax)
 fig.savefig('saturations.png', bbox_inches=0, pad_inches=0)

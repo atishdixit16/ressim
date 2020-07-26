@@ -43,16 +43,25 @@ s_list = []
 for i in range(nstep):
     before = time()
     # solve saturation
-    solverS.step(dt)
+    solverS.step_explicit(dt,0,0)
     after = time()
-    print '[{}/{}]: this loop took {} secs'.format(i+1, nstep, after - before)
-
+    print('[{}/{}]: this loop took {} secs'.format(i+1, nstep, after - before))
     s_list.append(solverS.s)
+
+# # visualize
+# fig, axs = plt.subplots(5,5, figsize=(8,8))
+# fig.subplots_adjust(wspace=.1, hspace=.1, left=0, right=1, bottom=0, top=1)
+# for ax, s in zip(axs.ravel(), s_list):
+#     ax.imshow(s)
+#     ax.axis('off')
+# fig.savefig('saturations.png', bbox_inches=0, pad_inches=0)
 
 # visualize
 fig, axs = plt.subplots(5,5, figsize=(8,8))
-fig.subplots_adjust(wspace=.1, hspace=.1, left=0, right=1, bottom=0, top=1)
+fig.subplots_adjust(wspace=.1, hspace=.1, left=0.15, right=0.85, bottom=0.1, top=0.9)
 for ax, s in zip(axs.ravel(), s_list):
-    ax.imshow(s)
+    im = ax.imshow(s, vmin=0, vmax=1)
     ax.axis('off')
+cbar_ax = fig.add_axes([0.9, 0.15, 0.05, 0.7])
+fig.colorbar(im, cax=cbar_ax)
 fig.savefig('saturations.png', bbox_inches=0, pad_inches=0)

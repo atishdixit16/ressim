@@ -436,10 +436,11 @@ class SaturationEquation(Parameters):
         pm = np.min( pv/vi + qp)
         cfl = ((1-s_oir-s_wir)/3)*pm
         Nts = np.ceil(dt/cfl)
+
         dtx = (dt/Nts)/pv
 
         mat = convecti(grid, v)
-        mat = mat + spa.spdiags(qn,0,grid.ncell, grid.ncell)
+        mat = - mat + spa.spdiags(qn,0,grid.ncell, grid.ncell)
         mat = spa.spdiags(dtx,0,grid.ncell,grid.ncell)*mat
         fi = qp*dtx
 
