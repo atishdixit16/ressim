@@ -1,11 +1,10 @@
+
 """ A Module for reservoir simulation in Python """
 
 import numpy as np
 import scipy.sparse as spa
 import scipy.sparse.linalg
 import scipy.optimize
-
-__all__ = ['Grid', 'Parameters', 'PressureEquation', 'SaturationEquation', 'transmi', 'convecti', 'impose_diri', 'csr_row_set_nz_to_val']
 
 class Grid(object):
     """
@@ -139,7 +138,7 @@ class Parameters(object):
     def q(self, q):
         if q is not None:
             assert isinstance(q, np.ndarray)
-            assert np.sum(q) == 0, "Unbalanced source term"
+            assert abs( np.sum(q) ) < np.finfo(float).eps, "Unbalanced source term"
             self.__q = q
 
     @s.setter
@@ -232,7 +231,7 @@ class PressureEquation(Parameters):
     def diri(self):
         """ Default to zero at center of the grid """
         if self.__diri is None:
-            return [(int(self.grid.ncell/2), 0.0)]
+            return [(0, 0.0)]
         return self.__diri
 
     @diri.setter
@@ -248,7 +247,7 @@ class PressureEquation(Parameters):
 
         mat, tx, ty = transmi(grid, k)
         q = np.copy(q).reshape(grid.ncell)
-        # impose_diri(mat, q, diri)  # inplace op on mat, q
+        impose_diri(mat, k, diri)  # inplace op on mat, q
 
         # pressure
         p = self.solve(mat, q)
@@ -356,8 +355,7 @@ class SaturationEquation(Parameters):
         s = self.solve(residual, s0=s, residual_jac=residual_jac)
         self.s = np.clip(s, 0., 1.).reshape(*grid.shape)  # clip to ensure within [0, 1]
 
-    
-    def step_dyn_dt(self, dt):
+    def step_mrst(self, dt):
         grid, q, phi, s = self.grid, self.q, self.phi, self.s
         v = self.v
         f_fn = self.f_fn
@@ -415,14 +413,6 @@ class SaturationEquation(Parameters):
                 IT += 1
         self.s = np.clip(s, 0., 1.).reshape(*grid.shape)  # clip to ensure within [0, 1]
 
-
-
-    # def solve(self, residual, s0, residual_jac=None):
-    #     if residual_jac is None:
-    #         residual_jac = '2-point'
-    #     sol = scipy.optimize.least_squares(residual, s0, jac=residual_jac, method='trf', tr_solver='lsmr', verbose=0)
-    #     return sol.x
-
     def solve(self, residual, s0, residual_jac=None):
         if residual_jac is None:
             residual_jac = 'krylov'
@@ -450,7 +440,7 @@ def transmi(grid, k):
     x1 = tx[:,0:nx].reshape(n); x2 = tx[:,1:nx+1].reshape(n)
     y1 = ty[0:ny,:].reshape(n); y2 = ty[1:ny+1,:].reshape(n)
 
-    data = [-y2, -x2,x1+x2+y1+y2 , -x1, -y1]
+    data = [-y2, -x2, x1+x2+y1+y2, -x1, -y1]
     diags = [-nx, -1, 0, 1, nx]
     mat = spa.spdiags(data, diags, n, n, format='csr')
 
@@ -472,7 +462,7 @@ def convecti(grid, v):
 
     return mat
 
-def impose_diri(mat, q, diri):
+def impose_diri(mat, k, diri):
     """ Impose Dirichlet boundary conditions. NOTE: inplace operation on mat, q
     For example, to impose a pressure value 99 at the first cell:
 
@@ -484,10 +474,10 @@ def impose_diri(mat, q, diri):
     q = [99 q2 ... qn]
     """
     for i, val in diri:
-        csr_row_set_nz_to_val(mat, i, 0.0)
-        mat[i,i] = 1.0 #1e12
-        q[i] = val #val*1e12
-    mat.eliminate_zeros()
+        # csr_row_set_nz_to_val(mat, i, 0.0)
+        mat[i,i] += 2*k[0,0]
+        # q[i] = val
+    # mat.eliminate_zeros()
 
 def csr_row_set_nz_to_val(csr, row, value=0):
     """ Set all nonzero elements (elements currently in the sparsity pattern)
