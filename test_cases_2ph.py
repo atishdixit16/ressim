@@ -8,12 +8,6 @@ import functools
 import ressim
 import utils
 
-import matplotlib
-matplotlib.use('Agg')
-matplotlib.rcParams['image.cmap'] = 'jet'
-import matplotlib.pyplot as plt
-
-
 def test_case_scipy():
 
     np.random.seed(42)  # for reproducibility

@@ -43,7 +43,7 @@ s_list = []
 for i in range(nstep):
     before = time()
     # solve saturation
-    solverS.step_explicit(dt,0,0)
+    solverS.step_explicit(dt,0.0,0.0)
     after = time()
     print('[{}/{}]: this loop took {} secs'.format(i+1, nstep, after - before))
     s_list.append(solverS.s)
