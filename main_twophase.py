@@ -54,7 +54,7 @@ for i in range(nstep):
     
     # solve saturation
     solverS.v = solverP.v
-    solverS.step(dt)
+    solverS.step_explicit(dt, s_wir, s_oir)
     print('s')
     after = time()
     print('[{}/{}]: this loop took {} secs'.format(i+1, nstep, after - before))

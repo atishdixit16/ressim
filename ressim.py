@@ -431,7 +431,7 @@ class SaturationEquation(Parameters):
         xp = np.maximum(v['x'], 0)
         yp = np.maximum(v['y'], 0)
 
-        vi = xp[0:nx-1,:] + yp[:,0:ny-1] + xn[1:nx,:] + yn[:,1:ny]
+        vi = xp[:,0:nx] + yp[0:ny,:] + xn[:,1:nx+1] + yn[1:ny+1,:]
         vi = vi.reshape(grid.ncell)
         pm = np.min( pv/vi + qp)
         cfl = ((1-s_oir-s_wir)/3)*pm
@@ -443,7 +443,7 @@ class SaturationEquation(Parameters):
         mat = spa.spdiags(dtx,0,grid.ncell,grid.ncell)*mat
         fi = qp*dtx
 
-        for _ in range(Nts):
+        for _ in range(int(Nts)):
             f = f_fn(s)
             s = s + mat*f + fi
 
