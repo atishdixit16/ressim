@@ -5,7 +5,7 @@ import numpy as np
 import ressim
 from spatial_expcov import batch_generate
 
-nx,ny=128,128
+nx,ny=64,64
 
 def test_case_scipy():
 
