@@ -434,12 +434,14 @@ class SaturationEquation(Parameters):
         vi = xp[:,0:nx] + yp[0:ny,:] + xn[:,1:nx+1] + yn[1:ny+1,:]
         vi = vi.reshape(grid.ncell)
         vi[vi==0] = np.finfo(float).eps # to avoid division by zero
-        pm = np.min( pv/vi + qp)
+        vi = np.abs(vi) # to avoid negative CFL number
+        pm = np.min(pv/vi + qp)
         cfl = ((1-s_oir-s_wir)/3)*pm
         Nts = np.ceil(dt/cfl)
 
         dtx = (dt/Nts)/pv
-
+        # print(dt)
+        # print(np.min(vi))
         mat = convecti(grid, v)
         mat = - mat + spa.spdiags(qn,0,grid.ncell, grid.ncell)
         mat = spa.spdiags(dtx,0,grid.ncell,grid.ncell)*mat
