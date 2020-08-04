@@ -145,6 +145,8 @@ class Parameters(object):
     def s(self, s):
         if s is not None:
             assert isinstance(s, np.ndarray)
+            if np.round(np.max(s),4) <= 1.0 and np.round(np.min(s),4) >= 0.0:
+                s = np.clip(s,0.,1.) # clip water saturation not in [0,1] due to precision error
             assert np.all(s >= 0) and np.all(s <= 1), "Water saturation not in [0,1]"
             self.__s = s
 
@@ -353,7 +355,7 @@ class SaturationEquation(Parameters):
                 return dr
 
         s = self.solve(residual, s0=s, residual_jac=residual_jac)
-        self.s = np.clip(s, 0., 1.).reshape(*grid.shape)  # clip to ensure within [0, 1]
+        self.s = s.reshape(*grid.shape)  
 
     def step_mrst(self, dt):
         grid, q, phi, s = self.grid, self.q, self.phi, self.s
@@ -411,7 +413,7 @@ class SaturationEquation(Parameters):
                 conv=1
             else:
                 IT += 1
-        self.s = np.clip(s, 0., 1.).reshape(*grid.shape)  # clip to ensure within [0, 1]
+        self.s = s.reshape(*grid.shape)  # clip to ensure within [0, 1]
 
     def step_explicit(self, dt, s_wir, s_oir):
         grid, q, phi, s = self.grid, self.q, self.phi, self.s
@@ -451,7 +453,7 @@ class SaturationEquation(Parameters):
             f = f_fn(s)
             s = s + mat*f + fi
 
-        self.s = np.clip(s, 0., 1.).reshape(*grid.shape)  # clip to ensure within [0, 1]
+        self.s = s.reshape(*grid.shape)  # clip to ensure within [0, 1]
 
 
     def solve(self, residual, s0, residual_jac=None):

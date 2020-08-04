@@ -15,12 +15,12 @@ import matplotlib.pyplot as plt
 from spatial_expcov import batch_generate
 
 np.random.seed(42)  # for reproducibility
-nx,ny=128,128
+nx,ny=64,64
 grid = ressim.Grid(nx=nx, ny=ny, lx=1.0, ly=1.0)  # unit square, 64x64 grid
-k = batch_generate(nx, nx, 0.1, 1.0, 1.0, 1.0, 1)
-k=np.exp(k[0])
+# k = batch_generate(nx, nx, 0.1, 1.0, 1.0, 1.0, 1)
+# k=np.exp(k[0])
 
-# k = np.exp(np.load('perm.npy').reshape(grid.shape))  # load log-permeability, convert to absolute with exp()
+k = np.exp(np.load('perm.npy').reshape(grid.shape))  # load log-permeability, convert to absolute with exp()
 q = np.zeros(grid.shape); q[0,0]=1; q[-1,-1]=-1  # source term: corner-to-corner flow (a.k.a. quarter-five spot)
 
 phi = np.ones(grid.shape)*0.2  # uniform porosity
@@ -50,6 +50,7 @@ for i in range(nstep):
     # solve saturation
     solverS.step_explicit(dt,0.0,0.0)
     # solverS.step(dt)
+    # solverS.step_mrst(dt)
     after = time()
     print('[{}/{}]: this loop took {} secs'.format(i+1, nstep, after - before))
     s_list.append(solverS.s)
