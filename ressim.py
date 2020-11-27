@@ -233,7 +233,7 @@ class PressureEquation(Parameters):
     def diri(self):
         """ Default to zero at center of the grid """
         if self.__diri is None:
-            return [(0, 0.0)]
+            return [(0, 1.0)]
         return self.__diri
 
     @diri.setter
@@ -518,7 +518,8 @@ def impose_diri(mat, k, diri):
     """
     for i, val in diri:
         # csr_row_set_nz_to_val(mat, i, 0.0)
-        mat[i,i] += 2*k[0,0]
+        mat[i,i] += 1.0
+        # print(k[0,0])
         # q[i] = val
     # mat.eliminate_zeros()
 
