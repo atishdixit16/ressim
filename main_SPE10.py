@@ -17,8 +17,8 @@ plt.rcParams.update({'font.size': 4})
 
 np.random.seed(42)  # for reproducibility
 
-case = 'upperness' 
-# case = 'tarbert' 
+# case = 'upperness' 
+case = 'tarbert' 
 
 # domain properties
 nx = 60
@@ -81,10 +81,10 @@ for index, tp in enumerate( trange( int(days/dt_p) ) ):
 
 
 # visualize
-fig, axs = plt.subplots(2,3,figsize=(3,9))
+fig, axs = plt.subplots(2,3,figsize=(6,18))
 for ax in axs.ravel():
     ax.axis('off')
-
+fig.suptitle(case+' benchmarking')
 for i, (s_c, s_b, p_c, p_b) in enumerate(zip(s_compute, s_benchmark, p_compute, p_benchmark)):
 
     # plot benchmark data
@@ -125,5 +125,4 @@ for i, (s_c, s_b, p_c, p_b) in enumerate(zip(s_compute, s_benchmark, p_compute, 
 
     plt.pause(0.2)
 
-fig.suptitle(case+' benchmarking')
-plt.show()
+fig.savefig('{}_benchmarking.png'.format(case), bbox_inches=0, pad_inches=0, dpi=300)
