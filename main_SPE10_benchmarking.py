@@ -17,8 +17,8 @@ plt.rcParams.update({'font.size': 4})
 
 np.random.seed(42)  # for reproducibility
 
-# case = 'upperness' 
-case = 'tarbert' 
+case = 'upperness' 
+# case = 'tarbert' 
 
 # domain properties
 nx = 60
@@ -39,8 +39,8 @@ mobility='quadratic'
 
 # time steps
 dt_s = 5 
-dt_p = dt_s*20
-days = dt_p*20
+dt_p = 100
+days = 2000
 
 # initial conditions
 Q = 795./85  # total injection
@@ -125,4 +125,5 @@ for i, (s_c, s_b, p_c, p_b) in enumerate(zip(s_compute, s_benchmark, p_compute, 
 
     plt.pause(0.2)
 
-fig.savefig('{}_benchmarking.png'.format(case), bbox_inches=0, pad_inches=0, dpi=300)
+# fig.savefig('{}_benchmarking.png'.format(case), bbox_inches=0, pad_inches=0, dpi=300)
+plt.show()
